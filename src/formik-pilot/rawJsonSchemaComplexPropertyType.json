@@ -1,0 +1,14 @@
+{
+    "type": "object",
+    "properties": {
+        "jobUser": {
+            "type": "object",
+            "properties": {
+                "userName": { "type": "string" },
+                "userEmail": { "type": "string" }
+            }
+        },
+        "jobName": { "type": "string" }
+    },
+    "required": ["foo"]
+}

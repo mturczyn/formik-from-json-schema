@@ -1,37 +1,34 @@
 import { Formik } from 'formik'
 import './signup.css'
 import Ajv from 'ajv'
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import jsf from 'json-schema-faker'
-import { schema } from './exampleJsonSchema'
 import { getFileContent } from './getFileContent'
 import { ajvErorrsToFormikErrors } from './ajvErorrsToFormikErrors'
 import { LabelWithInput } from './LabelWithInput'
 
 export const SignupForm = () => {
-    const ajv = useRef(new Ajv({ coerceTypes: true }))
     const [rawJsonSchema, setRawJsonSchema] = useState<string | undefined>()
 
     const validationSchema = rawJsonSchema && JSON.parse(rawJsonSchema)
     const initialValues = rawJsonSchema && jsf.generate(validationSchema)
+    const ajvValidation = useMemo(
+        () =>
+            !!validationSchema &&
+            new Ajv({ coerceTypes: true }).compile(validationSchema),
+        [validationSchema]
+    )
 
     console.log('initialValues', initialValues)
 
-    const handleValidate = (values) => {
-        console.log('validting values', values)
-        console.log('validting values, schema', validationSchema)
-        const validate = ajv.current.compile(validationSchema)
-        const valid = validate(values)
+    const handleValidate = (values: Record<typeof initialValues, string>) => {
+        if (!ajvValidation) return
 
-        console.log('ajv errors', ajv.current.errors)
-        console.log('valid', valid)
-        console.log('validate', validate.errors)
+        ajvValidation(values)
 
-        if (!validate.errors) return
+        if (!ajvValidation.errors) return
 
-        const formikErrors = ajvErorrsToFormikErrors(validate.errors)
-
-        console.log('formikErrors', formikErrors)
+        const formikErrors = ajvErorrsToFormikErrors(ajvValidation.errors)
 
         return formikErrors
     }
@@ -55,15 +52,9 @@ export const SignupForm = () => {
                         setSubmitting(false)
                     }}
                 >
-                    {({ touched, errors, getFieldProps, handleSubmit }) => (
+                    {({ handleSubmit }) => (
                         <form onSubmit={handleSubmit}>
-                            {Object.keys(initialValues).map((x) => (
-                                <LabelWithInput
-                                    key={x}
-                                    fieldName={x}
-                                    label={x}
-                                ></LabelWithInput>
-                            ))}
+                            <InputsForForm initialValues={initialValues} />
                             <input type="submit" value="Submit" />
                         </form>
                     )}
@@ -71,4 +62,37 @@ export const SignupForm = () => {
             )}
         </>
     )
+}
+
+const InputsForForm = ({
+    initialValues,
+    parentName,
+}: {
+    initialValues: any
+    parentName?: string
+}) => {
+    return Object.keys(initialValues).map((x) => {
+        const currentValue = initialValues[x]
+        console.log(
+            '>>>',
+            'generating input field for',
+            x,
+            'is string',
+            typeof currentValue === 'string',
+            'typeof',
+            typeof currentValue
+        )
+
+        if (typeof currentValue === 'string') {
+            return (
+                <LabelWithInput
+                    key={x}
+                    fieldName={!parentName ? x : parentName + '.' + x}
+                    label={x}
+                ></LabelWithInput>
+            )
+        } else {
+            return <InputsForForm initialValues={currentValue} parentName={x} />
+        }
+    })
 }
