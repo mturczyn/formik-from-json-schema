@@ -10,5 +10,5 @@
         },
         "jobName": { "type": "string" }
     },
-    "required": ["foo"]
+    "required": ["jobUser"]
 }

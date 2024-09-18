@@ -5,7 +5,10 @@ export function ajvErorrsToFormikErrors(ajvErrors) {
     const data = {}
 
     ajvErrors.forEach((ajvError) => {
-        let path = trimStart(ajvError.instancePath, '/')
+        let path =
+            ajvError.keyword === 'required'
+                ? ajvError.params.missingProperty
+                : trimStart(ajvError.instancePath, '/')
 
         if (ajvError.params.missingProperty) {
             path += `/${ajvError.params.missingProperty}`
