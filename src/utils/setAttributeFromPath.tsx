@@ -1,8 +1,13 @@
-export function setAttributeFromPath(data: any, path: string, value: any) {
-    const pathParts = path.split('/')
+export function setAttributeFromPath(
+    data: any,
+    path: string,
+    value: any,
+    pathSplitChar: string
+) {
+    const pathParts = path.split(pathSplitChar)
 
     pathParts.forEach((part, index) => {
-        if (data[part]) {
+        if (!data[part]) {
             data[part] = {}
         }
         if (index < pathParts.length - 1) {

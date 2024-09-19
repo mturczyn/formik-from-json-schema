@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "properties": {
+        "jobUsers": {
+            "type": "array",
+            "items": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "userName": { "type": "string" },
+                        "userEmail": { "type": "string" },
+                        "userAge": { "type": "integer" }
+                    }
+                }
+            ]
+        },
+        "jobName": { "type": "string" }
+    },
+    "required": ["jobUsers"]
+}

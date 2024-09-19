@@ -1,5 +1,5 @@
 import { trimStart } from './trimStart'
-import { setAttributeFromPath } from './setAttributeFromPath'
+import { setAttributeFromPath } from '../utils/setAttributeFromPath'
 
 export function ajvErorrsToFormikErrors(ajvErrors) {
     const data = {}
@@ -14,7 +14,7 @@ export function ajvErorrsToFormikErrors(ajvErrors) {
             path += `/${ajvError.params.missingProperty}`
         }
 
-        setAttributeFromPath(data, path, ajvError.message)
+        setAttributeFromPath(data, path, ajvError.message, '/')
     })
 
     return data

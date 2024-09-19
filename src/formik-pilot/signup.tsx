@@ -7,6 +7,7 @@ import { getFileContent } from './getFileContent'
 import { ajvErorrsToFormikErrors } from './ajvErorrsToFormikErrors'
 import { LabelWithInput } from './LabelWithInput'
 import { faker } from '@faker-js/faker'
+import { generate } from '../json-schema-custom-faker/jsonSchemaCustomeFaker'
 
 JSONSchemaFaker.extend('faker', () => {
     return faker
@@ -23,8 +24,8 @@ export const SignupForm = () => {
 
     const initialValues = useMemo(() => {
         if (!validationSchema) return null
-        const sample = JSONSchemaFaker.generate(validationSchema)
-
+        // const sample = JSONSchemaFaker.generate(validationSchema)
+        const sample = generate(validationSchema)
         return sample
     }, [validationSchema])
 
@@ -52,7 +53,7 @@ export const SignupForm = () => {
     }
 
     return (
-        <>
+        <div>
             <button
                 onClick={() =>
                     getFileContent().then((r) => setRawJsonSchema(r))
@@ -78,7 +79,7 @@ export const SignupForm = () => {
                     )}
                 </Formik>
             )}
-        </>
+        </div>
     )
 }
 
@@ -93,6 +94,16 @@ const InputsForForm = ({
         const currentValue = initialValues[x]
 
         if (typeof currentValue === 'object') {
+            if (Array.isArray(currentValue)) {
+                return currentValue.map((item, index) => (
+                    <InputsForForm
+                        key={`${x}:${index}`}
+                        initialValues={item}
+                        parentName={`${x}[${index}]`}
+                    />
+                ))
+            }
+
             return (
                 <InputsForForm
                     key={x}
@@ -101,11 +112,12 @@ const InputsForForm = ({
                 />
             )
         } else {
+            const fullPropertyPath = !parentName ? x : parentName + '.' + x
             return (
                 <LabelWithInput
-                    key={x}
-                    fieldName={!parentName ? x : parentName + '.' + x}
-                    label={x}
+                    key={fullPropertyPath}
+                    fieldName={fullPropertyPath}
+                    label={fullPropertyPath}
                 ></LabelWithInput>
             )
         }
