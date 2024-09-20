@@ -1,4 +1,4 @@
-import { Formik } from 'formik'
+import { Formik, useField } from 'formik'
 import './signup.css'
 import Ajv from 'ajv'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -17,11 +17,17 @@ export const SignupForm = () => {
     const [rawJsonSchema, setRawJsonSchema] = useState<string | undefined>()
     const [unexpectedErrors, setUnexpectedErrors] = useState<string[]>([])
     const formikKey = useRef(0)
+    const rawJsonSchemaFormKey = useRef(0)
 
-    const validationSchema = useMemo(
-        () => !!rawJsonSchema && JSON.parse(rawJsonSchema),
-        [rawJsonSchema]
-    )
+    const validationSchema = useMemo(() => {
+        try {
+            return !!rawJsonSchema && JSON.parse(rawJsonSchema)
+        } catch {
+            return undefined
+        }
+    }, [rawJsonSchema])
+
+    const rawJsonSchemaInitialValues = { formRawJsonSchema: rawJsonSchema }
 
     const initialValues = useMemo(() => {
         if (!validationSchema) return null
@@ -31,7 +37,10 @@ export const SignupForm = () => {
     }, [validationSchema])
 
     useEffect(() => {
-        if (initialValues) formikKey.current++
+        if (initialValues) {
+            formikKey.current++
+            rawJsonSchemaFormKey.current++
+        }
         setUnexpectedErrors([])
     }, [initialValues])
 
@@ -57,7 +66,6 @@ export const SignupForm = () => {
                 (e) => `Error at '${e.instancePath}': ${e.message}`
             )
 
-            console.log('>>>', 'errorMessages', errorMessages)
             setUnexpectedErrors(errorMessages)
         }
 
@@ -82,80 +90,118 @@ export const SignupForm = () => {
             >
                 Open file
             </button>
-            {initialValues && (
-                <>
-                    <div
+            {rawJsonSchema && (
+                <div
+                    style={{
+                        borderRight: '1px solid white',
+                        borderTop: '1px solid white',
+                        display: 'grid',
+                        gridTemplateRows: 'auto 1fr',
+                        gridArea: 'jsonSchema',
+                    }}
+                >
+                    <h1
                         style={{
-                            borderRight: '1px solid white',
-                            borderTop: '1px solid white',
-                            display: 'grid',
-                            gridTemplateRows: 'auto 1fr',
-                            gridArea: 'jsonSchema',
+                            fontSize: 'xx-large',
                         }}
                     >
-                        <h1
-                            style={{
-                                fontSize: 'xx-large',
-                            }}
-                        >
-                            Imported JSON schema
-                        </h1>
-                        <textarea
-                            wrap="off"
-                            className="m5"
-                            value={rawJsonSchema}
-                            onChange={(e) => setRawJsonSchema(e.target.value)}
-                        ></textarea>
-                    </div>
-                    <div
-                        style={{
-                            gridArea: 'form',
-                            borderTop: '1px solid white',
+                        Imported JSON schema
+                    </h1>
+                    <Formik
+                        key={rawJsonSchemaFormKey.current}
+                        initialValues={rawJsonSchemaInitialValues}
+                        initialErrors={
+                            !initialValues
+                                ? {
+                                      formRawJsonSchema: 'Invalid JSON',
+                                  }
+                                : undefined
+                        }
+                        validate={(values) => {
+                            try {
+                                if (values.formRawJsonSchema) {
+                                    JSON.parse(values.formRawJsonSchema)
+                                }
+                                return undefined
+                            } catch {
+                                return {
+                                    formRawJsonSchema: 'Invalid JSON',
+                                }
+                            }
+                        }}
+                        onSubmit={(values) => {
+                            setRawJsonSchema(values.formRawJsonSchema)
                         }}
                     >
-                        <h1 style={{ fontSize: 'xx-large' }}>Generated form</h1>
-                        <Formik
-                            key={formikKey.current}
-                            validate={handleValidate}
-                            initialValues={initialValues}
-                            onSubmit={(values, { setSubmitting }) => {
-                                alert(JSON.stringify(values))
-                                setSubmitting(false)
-                            }}
-                        >
-                            {({ handleSubmit }) => (
-                                <form onSubmit={handleSubmit}>
-                                    <InputsForForm
-                                        initialValues={initialValues}
+                        {({ handleSubmit }) => {
+                            return (
+                                <form
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateRows: '1fr auto',
+                                    }}
+                                    className="m5"
+                                    onSubmit={handleSubmit}
+                                >
+                                    <FormikTextarea fieldName="formRawJsonSchema" />
+                                    <input
+                                        style={{ justifySelf: 'center' }}
+                                        type="submit"
+                                        value="Load JSON"
                                     />
-                                    <input type="submit" value="Submit" />
                                 </form>
-                            )}
-                        </Formik>
-                    </div>
-                    {unexpectedErrors.length > 0 && (
-                        <div
-                            className="m5"
-                            style={{
-                                borderRadius: '1rem',
-                                gridArea: 'form',
-                                background: 'red',
-                                opacity: 0.85,
-                                color: 'black',
-                            }}
-                        >
-                            <h1 style={{ fontSize: 'large' }}>
-                                Unexpected error outside form
-                            </h1>
-                            <ul>
-                                {unexpectedErrors.map((e, i) => (
-                                    <li key={i}>{e}</li>
-                                ))}
-                            </ul>
-                            <p>Please update/reload JSON schema.</p>
-                        </div>
-                    )}
-                </>
+                            )
+                        }}
+                    </Formik>
+                </div>
+            )}
+            {initialValues && (
+                <div
+                    style={{
+                        gridArea: 'form',
+                        borderTop: '1px solid white',
+                    }}
+                >
+                    <h1 style={{ fontSize: 'xx-large' }}>Generated form</h1>
+                    <Formik
+                        key={formikKey.current}
+                        validate={handleValidate}
+                        initialValues={initialValues}
+                        onSubmit={(values, { setSubmitting }) => {
+                            alert(JSON.stringify(values))
+                            setSubmitting(false)
+                        }}
+                    >
+                        {({ handleSubmit }) => (
+                            <form onSubmit={handleSubmit}>
+                                <InputsForForm initialValues={initialValues} />
+                                <input type="submit" value="Submit" />
+                            </form>
+                        )}
+                    </Formik>
+                </div>
+            )}
+            {unexpectedErrors.length > 0 && (
+                <div
+                    className="m5"
+                    style={{
+                        borderRadius: '1rem',
+                        gridArea: 'form',
+                        background: 'red',
+                        opacity: 0.85,
+                        color: 'black',
+                    }}
+                >
+                    <h1 style={{ fontSize: 'large' }}>
+                        Unexpected error outside form
+                    </h1>
+                    <ul>
+                        {unexpectedErrors.map((e, i) => (
+                            <li key={i}>{e}</li>
+                        ))}
+                    </ul>
+                    <p>Please update/reload JSON schema.</p>
+                </div>
             )}
         </div>
     )
@@ -201,4 +247,31 @@ const InputsForForm = ({
             )
         }
     })
+}
+
+export const FormikTextarea = ({ fieldName }: { fieldName: string }) => {
+    const [field, meta] = useField(fieldName)
+    return (
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateRows: '1fr auto',
+            }}
+        >
+            <textarea
+                wrap="off"
+                style={!meta.error ? {} : { border: '1px solid red' }}
+                {...field}
+            ></textarea>
+            {meta.error && (
+                <div
+                    style={{
+                        color: 'red',
+                    }}
+                >
+                    Error: {meta.error}
+                </div>
+            )}
+        </div>
+    )
 }
