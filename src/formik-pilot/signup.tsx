@@ -75,6 +75,7 @@ export const SignupForm = () => {
     return (
         <div
             style={{
+                height: '100%',
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gridTemplateRows: 'auto 1fr',
@@ -155,32 +156,37 @@ export const SignupForm = () => {
                     </Formik>
                 </div>
             )}
-            {initialValues && (
-                <div
-                    style={{
-                        gridArea: 'form',
-                        borderTop: '1px solid white',
-                    }}
-                >
-                    <h1 style={{ fontSize: 'xx-large' }}>Generated form</h1>
-                    <Formik
-                        key={formikKey.current}
-                        validate={handleValidate}
-                        initialValues={initialValues}
-                        onSubmit={(values, { setSubmitting }) => {
-                            alert(JSON.stringify(values))
-                            setSubmitting(false)
-                        }}
-                    >
-                        {({ handleSubmit }) => (
-                            <form onSubmit={handleSubmit}>
-                                <InputsForForm initialValues={initialValues} />
-                                <input type="submit" value="Submit" />
-                            </form>
-                        )}
-                    </Formik>
-                </div>
-            )}
+
+            <div
+                style={{
+                    gridArea: 'form',
+                    borderTop: !rawJsonSchema ? '' : '1px solid white',
+                }}
+            >
+                {initialValues && (
+                    <>
+                        <h1 style={{ fontSize: 'xx-large' }}>Generated form</h1>
+                        <Formik
+                            key={formikKey.current}
+                            validate={handleValidate}
+                            initialValues={initialValues}
+                            onSubmit={(values, { setSubmitting }) => {
+                                alert(JSON.stringify(values))
+                                setSubmitting(false)
+                            }}
+                        >
+                            {({ handleSubmit }) => (
+                                <form onSubmit={handleSubmit}>
+                                    <InputsForForm
+                                        initialValues={initialValues}
+                                    />
+                                    <input type="submit" value="Submit" />
+                                </form>
+                            )}
+                        </Formik>
+                    </>
+                )}
+            </div>
             {unexpectedErrors.length > 0 && (
                 <div
                     className="m5"
