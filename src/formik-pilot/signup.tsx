@@ -5,9 +5,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { JSONSchemaFaker } from 'json-schema-faker'
 import { getFileContent } from './getFileContent'
 import { ajvErorrsToFormikErrors } from './ajvErorrsToFormikErrors'
-import { LabelWithInput } from './LabelWithInput'
 import { faker } from '@faker-js/faker'
 import { generate } from '../json-schema-custom-faker/jsonSchemaCustomeFaker'
+import { getAttributeFromPath } from '../utils/setAttributeFromPath'
+import { InputsForForm } from './InputsForForm'
 
 JSONSchemaFaker.extend('faker', () => {
     return faker
@@ -175,10 +176,26 @@ export const SignupForm = () => {
                                 setSubmitting(false)
                             }}
                         >
-                            {({ handleSubmit }) => (
+                            {({ handleSubmit, setFieldValue, values }) => (
                                 <form onSubmit={handleSubmit}>
                                     <InputsForForm
-                                        initialValues={initialValues}
+                                        initialValues={values}
+                                        onAddItemToArray={({
+                                            arrayItem,
+                                            objectPath,
+                                        }) => {
+                                            const arrayFieldValue =
+                                                getAttributeFromPath(
+                                                    values,
+                                                    objectPath,
+                                                    '.'
+                                                ) as unknown as []
+                                            setFieldValue(
+                                                objectPath,
+                                                [...arrayFieldValue, arrayItem],
+                                                true
+                                            )
+                                        }}
                                     />
                                     <input type="submit" value="Submit" />
                                 </form>
@@ -213,49 +230,7 @@ export const SignupForm = () => {
     )
 }
 
-const InputsForForm = ({
-    initialValues,
-    parentName,
-}: {
-    initialValues: object
-    parentName?: string
-}) => {
-    return Object.keys(initialValues).map((x) => {
-        const currentValue = initialValues[x]
-
-        if (typeof currentValue === 'object') {
-            if (Array.isArray(currentValue)) {
-                return currentValue.map((item, index) => (
-                    <InputsForForm
-                        key={`${x}:${index}`}
-                        initialValues={item}
-                        parentName={`${x}[${index}]`}
-                    />
-                ))
-            }
-
-            return (
-                <InputsForForm
-                    key={x}
-                    initialValues={currentValue}
-                    parentName={x}
-                />
-            )
-        } else {
-            const fullPropertyPath = !parentName ? x : parentName + '.' + x
-
-            return (
-                <LabelWithInput
-                    key={fullPropertyPath}
-                    fieldName={fullPropertyPath}
-                    label={fullPropertyPath}
-                ></LabelWithInput>
-            )
-        }
-    })
-}
-
-export const FormikTextarea = ({ fieldName }: { fieldName: string }) => {
+const FormikTextarea = ({ fieldName }: { fieldName: string }) => {
     const [field, meta] = useField(fieldName)
     return (
         <div

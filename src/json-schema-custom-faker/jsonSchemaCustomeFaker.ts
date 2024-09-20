@@ -56,7 +56,6 @@ function generateObject(
     // should always have the prop name.
     if (!currentPropName) return null
 
-    console.log('>>>', currentPropName, type, rest)
     if (type === 'string' && !!rest.enum && rest.enum.length > 0) {
         setAttributeFromPath(data, currentPropName, rest.enum[0], '.')
         return
