@@ -196,6 +196,26 @@ export const SignupForm = () => {
                                                 true
                                             )
                                         }}
+                                        onRemoveItemToArray={({
+                                            arrayItem,
+                                            objectPath,
+                                        }) => {
+                                            const arrayFieldValue =
+                                                getAttributeFromPath(
+                                                    values,
+                                                    objectPath,
+                                                    '.'
+                                                ) as unknown as []
+                                            if (arrayFieldValue.length > 1) {
+                                                setFieldValue(
+                                                    objectPath,
+                                                    arrayFieldValue.filter(
+                                                        (x) => x !== arrayItem
+                                                    ),
+                                                    true
+                                                )
+                                            }
+                                        }}
                                     />
                                     <input type="submit" value="Submit" />
                                 </form>

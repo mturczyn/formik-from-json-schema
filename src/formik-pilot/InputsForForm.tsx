@@ -5,11 +5,15 @@ export const InputsForForm = ({
     initialValues,
     parentName,
     onAddItemToArray,
-    isForArrayItem,
+    onRemoveItemToArray,
 }: {
     initialValues: object
     parentName?: string
     onAddItemToArray?: (addItemEvent: {
+        arrayItem: any
+        objectPath: string
+    }) => void
+    onRemoveItemToArray?: (addItemEvent: {
         arrayItem: any
         objectPath: string
     }) => void
@@ -21,9 +25,10 @@ export const InputsForForm = ({
             if (Array.isArray(currentValue)) {
                 return (
                     <InputsForArray
-                        currentValue={currentValue}
+                        arrayWithValues={currentValue}
                         objectKey={objectKey}
                         onAddItemToArray={onAddItemToArray}
+                        onRemoveItemToArray={onRemoveItemToArray}
                     />
                 )
             }
