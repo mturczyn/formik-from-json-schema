@@ -176,7 +176,12 @@ export const SignupForm = () => {
                                 setSubmitting(false)
                             }}
                         >
-                            {({ handleSubmit, setFieldValue, values }) => (
+                            {({
+                                handleSubmit,
+                                setFieldValue,
+                                values,
+                                setValues,
+                            }) => (
                                 <form onSubmit={handleSubmit}>
                                     <InputsForForm
                                         initialValues={values}
@@ -184,36 +189,60 @@ export const SignupForm = () => {
                                             arrayItem,
                                             objectPath,
                                         }) => {
-                                            const arrayFieldValue =
-                                                getAttributeFromPath(
-                                                    values,
+                                            // For empty path, we want to get root
+                                            // object, so the values
+                                            if (objectPath) {
+                                                const arrayFieldValue =
+                                                    getAttributeFromPath(
+                                                        values,
+                                                        objectPath,
+                                                        '.'
+                                                    ) as unknown as []
+                                                setFieldValue(
                                                     objectPath,
-                                                    '.'
-                                                ) as unknown as []
-                                            setFieldValue(
-                                                objectPath,
-                                                [...arrayFieldValue, arrayItem],
-                                                true
-                                            )
+                                                    [
+                                                        ...arrayFieldValue,
+                                                        arrayItem,
+                                                    ],
+                                                    true
+                                                )
+
+                                                return
+                                            }
+                                            setValues([
+                                                ...(values as unknown as []),
+                                                arrayItem,
+                                            ] as any)
                                         }}
                                         onRemoveItemToArray={({
                                             arrayItem,
                                             objectPath,
                                         }) => {
-                                            const arrayFieldValue =
-                                                getAttributeFromPath(
-                                                    values,
-                                                    objectPath,
-                                                    '.'
-                                                ) as unknown as []
+                                            // For empty path, we want to get root
+                                            // object, so the values
+                                            const arrayFieldValue = (objectPath
+                                                ? getAttributeFromPath(
+                                                      values,
+                                                      objectPath,
+                                                      '.'
+                                                  )
+                                                : values) as unknown as []
                                             if (arrayFieldValue.length > 1) {
-                                                setFieldValue(
-                                                    objectPath,
+                                                const filteredArray =
                                                     arrayFieldValue.filter(
                                                         (x) => x !== arrayItem
-                                                    ),
-                                                    true
-                                                )
+                                                    )
+                                                if (objectPath) {
+                                                    setFieldValue(
+                                                        objectPath,
+                                                        filteredArray,
+                                                        true
+                                                    )
+                                                } else {
+                                                    setValues(
+                                                        filteredArray as any
+                                                    )
+                                                }
                                             }
                                         }}
                                     />

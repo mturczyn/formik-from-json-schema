@@ -18,6 +18,18 @@ export const InputsForForm = ({
         objectPath: string
     }) => void
 }) => {
+    if (Array.isArray(initialValues)) {
+        return (
+            <InputsForArray
+                key="rootform"
+                arrayWithValues={initialValues}
+                objectKey={parentName ?? ''}
+                onAddItemToArray={onAddItemToArray}
+                onRemoveItemToArray={onRemoveItemToArray}
+            />
+        )
+    }
+
     return Object.keys(initialValues).map((objectKey) => {
         const currentValue = initialValues[objectKey]
 

@@ -26,7 +26,7 @@ export function getAttributeFromPath(
     const pathParts = path.split(pathSplitChar)
     let value
     pathParts.forEach((part, index) => {
-        if (!data[part]) {
+        if (!data[part] && data[part] !== '') {
             return undefined
         }
         if (index < pathParts.length - 1) {

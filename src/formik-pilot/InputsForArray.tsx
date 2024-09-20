@@ -23,13 +23,21 @@ export const InputsForArray = ({
 
     return (
         <>
-            {showItems ? (
-                <button type="button" onClick={() => setShowItems(false)}>
-                    Hide
-                </button>
-            ) : (
-                <div>
-                    {objectKey}{' '}
+            {!showItems && (
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        columnGap: '1rem',
+                    }}
+                >
+                    <span
+                        style={{
+                            placeSelf: 'center flex-end',
+                        }}
+                    >
+                        {objectKey}
+                    </span>
                     <button type="button" onClick={() => setShowItems(true)}>
                         Show all items ({currentCount})
                     </button>
@@ -37,18 +45,33 @@ export const InputsForArray = ({
             )}
             {showItems && (
                 <>
-                    <button
-                        type="button"
-                        onClick={() =>
-                            onAddItemToArray &&
-                            onAddItemToArray({
-                                arrayItem: { ...currentValue[0] },
-                                objectPath: objectKey,
-                            })
-                        }
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-around',
+                        }}
                     >
-                        Add
-                    </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                onAddItemToArray &&
+                                onAddItemToArray({
+                                    arrayItem: { ...currentValue[0] },
+                                    objectPath: objectKey,
+                                })
+                            }
+                        >
+                            Add item
+                        </button>
+                        {showItems && (
+                            <button
+                                type="button"
+                                onClick={() => setShowItems(false)}
+                            >
+                                Collapse items
+                            </button>
+                        )}
+                    </div>
                     {currentValue.map((item: any, index: number) => (
                         <div
                             key={`${objectKey}:${index}`}

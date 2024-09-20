@@ -15,16 +15,14 @@ export function ajvErorrsToFormikErrors(
     const unexpectedErrors: AjvErrors = []
 
     ajvErrors.forEach((ajvError) => {
-        let path =
+        const path =
             ajvError.keyword === 'required'
                 ? ajvError.params.missingProperty
                 : trimStart(ajvError.instancePath, '/')
 
-        if (ajvError.params.missingProperty) {
-            path += `/${ajvError.params.missingProperty}`
-        }
-
-        if (!getAttributeFromPath(validatedValues, path, '/')) {
+        const valueAtPath = getAttributeFromPath(validatedValues, path, '/')
+        // If validated values do not contain even such field.
+        if (valueAtPath !== '' && !valueAtPath) {
             unexpectedErrors.push(ajvError)
         }
 

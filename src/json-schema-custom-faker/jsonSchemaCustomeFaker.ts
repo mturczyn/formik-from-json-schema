@@ -10,6 +10,14 @@ export function generate(schema: Schema) {
 
     generateObject(schema, data)
 
+    const dataKeys = Object.keys(data)
+    // If there's only key with empty name,
+    // it means we generated whole value
+    // for root, and here is the correction.
+    if (dataKeys.length === 1 && !dataKeys[0]) {
+        return data[dataKeys[0]]
+    }
+
     return data
 }
 
@@ -46,7 +54,6 @@ function generateObject(
         const arrayItem = {}
         generateObject(arrayType, arrayItem)
         setAttributeFromPath(data, currentPropName ?? '', [arrayItem], '.')
-
         return
     }
 
