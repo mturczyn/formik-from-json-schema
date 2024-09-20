@@ -1,8 +1,18 @@
 import { trimStart } from './trimStart'
-import { setAttributeFromPath } from '../utils/setAttributeFromPath'
+import {
+    getAttributeFromPath,
+    setAttributeFromPath,
+} from '../utils/setAttributeFromPath'
+import { ErrorObject } from 'ajv'
 
-export function ajvErorrsToFormikErrors(ajvErrors) {
+type AjvErrors = ErrorObject<string, Record<string, any>, unknown>[]
+
+export function ajvErorrsToFormikErrors(
+    ajvErrors: AjvErrors,
+    validatedValues: any
+): { data: any; unexpectedErrors: AjvErrors } {
     const data = {}
+    const unexpectedErrors: AjvErrors = []
 
     ajvErrors.forEach((ajvError) => {
         let path =
@@ -14,8 +24,12 @@ export function ajvErorrsToFormikErrors(ajvErrors) {
             path += `/${ajvError.params.missingProperty}`
         }
 
+        if (!getAttributeFromPath(validatedValues, path, '/')) {
+            unexpectedErrors.push(ajvError)
+        }
+
         setAttributeFromPath(data, path, ajvError.message, '/')
     })
 
-    return data
+    return { data: data, unexpectedErrors: unexpectedErrors }
 }

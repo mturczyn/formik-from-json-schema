@@ -3,7 +3,7 @@ import { JSONSchema4, JSONSchema7 } from 'json-schema'
 import { faker } from '@faker-js/faker'
 import { setAttributeFromPath } from '../utils/setAttributeFromPath'
 
-type SchemaPropertyData = Pick<Schema, 'type' | 'properties' | 'items'>
+type SchemaPropertyData = Pick<Schema, 'type' | 'properties' | 'items' | 'enum'>
 
 export function generate(schema: Schema) {
     const data = {}
@@ -14,7 +14,7 @@ export function generate(schema: Schema) {
 }
 
 function generateObject(
-    { type, properties, items }: SchemaPropertyData,
+    { type, properties, items, ...rest }: SchemaPropertyData,
     data: any,
     currentPropName?: string
 ) {
@@ -26,6 +26,7 @@ function generateObject(
                     type: prop.type,
                     properties: prop.properties,
                     items: prop.items,
+                    enum: prop.enum,
                 },
                 data,
                 currentPropName ? currentPropName + '.' + x : x
@@ -54,6 +55,12 @@ function generateObject(
     // and will populate the parameter, so by now we
     // should always have the prop name.
     if (!currentPropName) return null
+
+    console.log('>>>', currentPropName, type, rest)
+    if (type === 'string' && !!rest.enum && rest.enum.length > 0) {
+        setAttributeFromPath(data, currentPropName, rest.enum[0], '.')
+        return
+    }
 
     const limits = { min: 1, max: 100 }
     const randomValue =

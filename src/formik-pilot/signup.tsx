@@ -15,6 +15,7 @@ JSONSchemaFaker.extend('faker', () => {
 
 export const SignupForm = () => {
     const [rawJsonSchema, setRawJsonSchema] = useState<string | undefined>()
+    const [unexpectedErrors, setUnexpectedErrors] = useState<string[]>([])
     const formikKey = useRef(0)
 
     const validationSchema = useMemo(
@@ -31,6 +32,7 @@ export const SignupForm = () => {
 
     useEffect(() => {
         if (initialValues) formikKey.current++
+        setUnexpectedErrors([])
     }, [initialValues])
 
     const ajvValidation = useMemo(
@@ -47,14 +49,33 @@ export const SignupForm = () => {
 
         if (!ajvValidation.errors) return
 
-        const formikErrors = ajvErorrsToFormikErrors(ajvValidation.errors)
+        const { data: formikErrors, unexpectedErrors: ajvUnexpectedErrors } =
+            ajvErorrsToFormikErrors(ajvValidation.errors, values)
+
+        if (ajvUnexpectedErrors.length > 0) {
+            const errorMessages = ajvUnexpectedErrors.map(
+                (e) => `Error at '${e.instancePath}': ${e.message}`
+            )
+
+            console.log('>>>', 'errorMessages', errorMessages)
+            setUnexpectedErrors(errorMessages)
+        }
 
         return formikErrors
     }
 
     return (
-        <div>
+        <div
+            style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gridTemplateRows: 'auto 1fr',
+                gridTemplateAreas: '"button button" "jsonSchema form"',
+            }}
+        >
             <button
+                className="m5"
+                style={{ gridArea: 'button', justifySelf: 'center' }}
                 onClick={() =>
                     getFileContent().then((r) => setRawJsonSchema(r))
                 }
@@ -62,22 +83,79 @@ export const SignupForm = () => {
                 Open file
             </button>
             {initialValues && (
-                <Formik
-                    key={formikKey.current}
-                    validate={handleValidate}
-                    initialValues={initialValues}
-                    onSubmit={(values, { setSubmitting }) => {
-                        alert(JSON.stringify(values))
-                        setSubmitting(false)
-                    }}
-                >
-                    {({ handleSubmit }) => (
-                        <form onSubmit={handleSubmit}>
-                            <InputsForForm initialValues={initialValues} />
-                            <input type="submit" value="Submit" />
-                        </form>
+                <>
+                    <div
+                        style={{
+                            borderRight: '1px solid white',
+                            borderTop: '1px solid white',
+                            display: 'grid',
+                            gridTemplateRows: 'auto 1fr',
+                            gridArea: 'jsonSchema',
+                        }}
+                    >
+                        <h1
+                            style={{
+                                fontSize: 'xx-large',
+                            }}
+                        >
+                            Imported JSON schema
+                        </h1>
+                        <textarea
+                            wrap="off"
+                            className="m5"
+                            value={rawJsonSchema}
+                            onChange={(e) => setRawJsonSchema(e.target.value)}
+                        ></textarea>
+                    </div>
+                    <div
+                        style={{
+                            gridArea: 'form',
+                            borderTop: '1px solid white',
+                        }}
+                    >
+                        <h1 style={{ fontSize: 'xx-large' }}>Generated form</h1>
+                        <Formik
+                            key={formikKey.current}
+                            validate={handleValidate}
+                            initialValues={initialValues}
+                            onSubmit={(values, { setSubmitting }) => {
+                                alert(JSON.stringify(values))
+                                setSubmitting(false)
+                            }}
+                        >
+                            {({ handleSubmit }) => (
+                                <form onSubmit={handleSubmit}>
+                                    <InputsForForm
+                                        initialValues={initialValues}
+                                    />
+                                    <input type="submit" value="Submit" />
+                                </form>
+                            )}
+                        </Formik>
+                    </div>
+                    {unexpectedErrors.length > 0 && (
+                        <div
+                            className="m5"
+                            style={{
+                                borderRadius: '1rem',
+                                gridArea: 'form',
+                                background: 'red',
+                                opacity: 0.85,
+                                color: 'black',
+                            }}
+                        >
+                            <h1 style={{ fontSize: 'large' }}>
+                                Unexpected error outside form
+                            </h1>
+                            <ul>
+                                {unexpectedErrors.map((e, i) => (
+                                    <li key={i}>{e}</li>
+                                ))}
+                            </ul>
+                            <p>Please update/reload JSON schema.</p>
+                        </div>
                     )}
-                </Formik>
+                </>
             )}
         </div>
     )
@@ -113,6 +191,7 @@ const InputsForForm = ({
             )
         } else {
             const fullPropertyPath = !parentName ? x : parentName + '.' + x
+
             return (
                 <LabelWithInput
                     key={fullPropertyPath}

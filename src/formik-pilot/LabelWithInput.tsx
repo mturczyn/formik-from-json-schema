@@ -13,13 +13,16 @@ export const LabelWithInput = ({
             className="m5"
             style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gridTemplateRows: 'auto auto',
+                gridTemplateColumns: '1fr 1fr',
+                gridTemplateRows: '1fr 1fr',
                 columnGap: '1rem',
-                placeItems: 'stretch flex-end',
             }}
         >
-            <label className="m5" htmlFor={fieldName}>
+            <label
+                className="m5"
+                style={{ placeSelf: 'flex-end' }}
+                htmlFor={fieldName}
+            >
                 {label}
             </label>
             <input
@@ -30,6 +33,7 @@ export const LabelWithInput = ({
                 <div
                     style={{
                         color: 'red',
+                        gridColumn: '2',
                     }}
                 >
                     Error: {meta.error}
