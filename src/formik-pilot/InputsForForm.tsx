@@ -25,6 +25,7 @@ export const InputsForForm = ({
             if (Array.isArray(currentValue)) {
                 return (
                     <InputsForArray
+                        key={objectKey}
                         arrayWithValues={currentValue}
                         objectKey={objectKey}
                         onAddItemToArray={onAddItemToArray}

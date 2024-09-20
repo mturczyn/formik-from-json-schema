@@ -51,6 +51,7 @@ export const InputsForArray = ({
                     </button>
                     {currentValue.map((item: any, index: number) => (
                         <div
+                            key={`${objectKey}:${index}`}
                             style={{
                                 border: '1px solid white',
                                 margin: '5px 0',
