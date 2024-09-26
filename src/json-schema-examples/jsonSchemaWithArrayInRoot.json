@@ -1,0 +1,18 @@
+{
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "MetaData": {
+                "type": "string"
+            },
+            "InterfacesSource": {
+                "type": "string"
+            },
+            "SourceBlobContainer": {
+                "type": "string"
+            }
+        },
+        "required": ["MetaData", "InterfacesSource", "SourceBlobContainer"]
+    }
+}

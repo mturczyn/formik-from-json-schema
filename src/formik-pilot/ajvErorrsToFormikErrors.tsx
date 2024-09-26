@@ -1,8 +1,6 @@
 import { trimStart } from './trimStart'
-import {
-    getAttributeFromPath,
-    setAttributeFromPath,
-} from '../utils/setAttributeFromPath'
+import { setAttributeFromPath } from '../utils/setAttributeFromPath'
+import { getAttributeFromPath } from '../utils/getAttributeFromPath'
 import { ErrorObject } from 'ajv'
 
 type AjvErrors = ErrorObject<string, Record<string, any>, unknown>[]

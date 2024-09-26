@@ -7,8 +7,9 @@ import { getFileContent } from './getFileContent'
 import { ajvErorrsToFormikErrors } from './ajvErorrsToFormikErrors'
 import { faker } from '@faker-js/faker'
 import { generate } from '../json-schema-custom-faker/jsonSchemaCustomeFaker'
-import { getAttributeFromPath } from '../utils/setAttributeFromPath'
+import { getAttributeFromPath } from '../utils/getAttributeFromPath'
 import { InputsForForm } from './InputsForForm'
+import { nullifyEmptyStringValues } from '../utils/nullifyEmptyStringValues'
 
 JSONSchemaFaker.extend('faker', () => {
     return faker
@@ -19,6 +20,7 @@ export const SignupForm = () => {
     const [unexpectedErrors, setUnexpectedErrors] = useState<string[]>([])
     const formikKey = useRef(0)
     const rawJsonSchemaFormKey = useRef(0)
+    const [nullifyEmptyValues, setNullifyEmptyValues] = useState(true)
 
     const validationSchema = useMemo(() => {
         try {
@@ -169,7 +171,12 @@ export const SignupForm = () => {
                         <h1 style={{ fontSize: 'xx-large' }}>Generated form</h1>
                         <Formik
                             key={formikKey.current}
-                            validate={handleValidate}
+                            validate={(values) => {
+                                if (nullifyEmptyValues) {
+                                    nullifyEmptyStringValues(values)
+                                }
+                                return handleValidate(values)
+                            }}
                             initialValues={initialValues}
                             onSubmit={(values, { setSubmitting }) => {
                                 alert(JSON.stringify(values))
@@ -247,6 +254,20 @@ export const SignupForm = () => {
                                         }}
                                     />
                                     <input type="submit" value="Submit" />
+                                    <br />
+                                    <button
+                                        className="m5"
+                                        type="button"
+                                        onClick={() =>
+                                            setNullifyEmptyValues(
+                                                !nullifyEmptyValues
+                                            )
+                                        }
+                                    >
+                                        {nullifyEmptyValues
+                                            ? "Don't nullify empty strings"
+                                            : 'Nullify empty strings'}
+                                    </button>
                                 </form>
                             )}
                         </Formik>
